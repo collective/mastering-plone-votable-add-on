@@ -1,0 +1,32 @@
+[repository]
+name = "mastering-plone-votable-add-on"
+changelog = "CHANGELOG.md"
+version = "version.txt"
+version_format = "semver"
+container_images_prefix = "ghcr.io/collective/mastering-plone-votable-add-on"
+compose = ["docker-compose.yml"]
+
+[repository.towncrier]
+section = "Project"
+settings = "towncrier.toml"
+
+[backend.package]
+name = "ploneconf.votable"
+path = "backend"
+changelog = "backend/CHANGELOG.md"
+towncrier_settings = "backend/pyproject.toml"
+base_package = "Products.CMFPlone"
+publish = true
+
+[frontend.package]
+name = "volto-ploneconf-votable"
+path = "frontend/packages/volto-ploneconf-votable"
+changelog = "frontend/packages/volto-ploneconf-votable/CHANGELOG.md"
+towncrier_settings = "frontend/packages/volto-ploneconf-votable/towncrier.toml"
+base_package = "@plone/volto"
+publish = true
+
+[cookieplone]
+template = "monorepo_addon"
+template_version = "8e498811980e38b7db5d5cb0f5645256feaa8799"
+generated_date = "2026-08-13 16:13:33"
