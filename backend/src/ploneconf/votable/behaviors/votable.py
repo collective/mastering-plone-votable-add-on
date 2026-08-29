@@ -1,0 +1,140 @@
+from persistent.list import PersistentList
+from persistent.mapping import PersistentMapping
+from plone import api
+from plone.autoform.interfaces import IFormFieldProvider
+from plone.supermodel import model
+from zope import schema
+from zope.annotation.interfaces import IAnnotations
+from zope.component import adapter
+from zope.interface import implementer
+from zope.interface import Interface
+from zope.interface import provider
+
+
+class IVotableMarker(Interface):
+    """Marker interface for content types or instances that should be votable"""
+
+    pass
+
+
+KEY = "ploneconf.votable.behaviors.votable.Votable"
+
+
+@provider(IFormFieldProvider)
+class IVotable(model.Schema):
+    """Schema for the votable behavior
+
+    IVotable(object) returns the adapted object with votable behavior
+    """
+
+    voting_enabled = schema.Bool(
+        title="Voting enabled?",
+        readonly=True,
+    )
+
+    def vote(vote):
+        """
+        Store the vote information and store the user(name)
+        to ensure that the user does not vote twice.
+        """
+
+    def average_vote():
+        """
+        Return the average voting for an item.
+        """
+
+    def has_votes():
+        """
+        Return whether anybody ever voted for this item.
+        """
+
+    def already_voted():
+        """
+        Return the information wether a person already voted.
+        """
+
+    def clear():
+        """
+        Clear the votes. Should only be called by admins.
+        """
+
+
+@implementer(IVotable)
+@adapter(IVotableMarker)
+class Votable:
+    """Adapter implementing the votable behavior"""
+
+    def __init__(self, context):
+        self.context = context
+        annotations = IAnnotations(context)
+        if KEY not in annotations:
+            # You know what happens if we don't use persistent classes here?
+            annotations[KEY] = PersistentMapping({
+                "voted": PersistentList(),
+                "votes": PersistentMapping(),
+            })
+        self.annotations = annotations[KEY]
+
+    @property
+    def voting_enabled(self):
+        return True
+
+    # getter
+    @property
+    def votes(self):
+        return self.annotations["votes"]
+
+    # setter
+    # def votes(self, value):
+    #     """We do not define a setter.
+    #     Function 'vote' is the only one that shall set attributes
+    #     of the context object."""
+    #     self.annotations["votes"] = value
+
+    # getter
+    @property
+    def voted(self):
+        return self.annotations["voted"]
+
+    # setter
+    # def voted(self, value):
+    #     self.annotations["voted"] = value
+
+    def vote(self, vote):
+        if self.already_voted():
+            raise KeyError("You may not vote twice.")
+        vote = int(vote)
+        current_user = api.user.get_current()
+        self.annotations["voted"].append(current_user.id)
+        votes = self.annotations.get("votes", {})
+        if vote not in votes:
+            votes[vote] = 1
+        else:
+            votes[vote] += 1
+
+    def total_votes(self):
+        return sum(self.annotations.get("votes", {}).values())
+
+    def average_vote(self):
+        total_votes = sum(self.annotations.get("votes", {}).values())
+        if total_votes == 0:
+            return 0
+        total_points = sum([
+            vote * count for (vote, count) in self.annotations.get("votes", {}).items()
+        ])
+        return float(total_points) / total_votes
+
+    def has_votes(self):
+        return len(self.annotations.get("votes", {})) != 0
+
+    def already_voted(self):
+        current_user = api.user.get_current()
+        return current_user.id in self.annotations["voted"]
+
+    def clear(self):
+        annotations = IAnnotations(self.context)
+        annotations[KEY] = PersistentMapping({
+            "voted": PersistentList(),
+            "votes": PersistentMapping(),
+        })
+        self.annotations = annotations[KEY]
