@@ -1,5 +1,22 @@
-<configure xmlns="http://namespaces.zope.org/zope">
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    xmlns:zcml="http://namespaces.zope.org/zcml"
+    i18n_domain="plone"
+    >
 
-  <!-- -*- extra stuff goes here -*- -->
+  <permission
+      id="ploneconf.votable.view_vote"
+      title="ploneconf.votable: View votes"
+      />
+
+  <permission
+      id="ploneconf.votable.can_vote"
+      title="ploneconf.votable: Can vote"
+      />
+
+  <permission
+      id="ploneconf.votable.clear_votes"
+      title="ploneconf.votable: Clear votes"
+      />
 
 </configure>

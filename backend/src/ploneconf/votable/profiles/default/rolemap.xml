@@ -1,6 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <rolemap>
   <permissions>
-    <!-- -*- extra stuff goes here -*- -->
+
+    <permission acquire="True"
+                name="ploneconf.votable: View votes"
+    >
+      <role name="Authenticated" />
+      <role name="Site Administrator" />
+      <role name="Manager" />
+    </permission>
+    <permission acquire="True"
+                name="ploneconf.votable: Can vote"
+    >
+      <role name="Reviewer" />
+    </permission>
+    <permission acquire="True"
+                name="ploneconf.votable: Clear votes"
+    >
+      <role name="Site Administrator" />
+      <role name="Manager" />
+    </permission>
+
   </permissions>
 </rolemap>
